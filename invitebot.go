@@ -44,7 +44,7 @@ func onNewMsg(bot *deltachat.Bot, message *deltachat.Message) {
 			cli.Logger.Error(err)
 			return
 		}
-		if chatInfo.ChatType == CHAT_TYPE_GROUP {
+		if chatInfo.ChatType == deltachat.CHAT_TYPE_GROUP {
 			sendInviteQr(chat)
 		} else {
 			chat.SendText("The /invite command can only be used in groups, send /help for more info")

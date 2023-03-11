@@ -1,8 +1,8 @@
 #  InviteBot
 
 ![Latest release](https://img.shields.io/github/v/tag/deltachat-bot/invitebot?label=release)
-![Go version](https://img.shields.io/github/go-mod/go-version/deltachat-bot/invitebot)
 [![CI](https://github.com/deltachat-bot/invitebot/actions/workflows/ci.yml/badge.svg)](https://github.com/deltachat-bot/invitebot/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/deltachat-bot/invitebot)](https://goreportcard.com/report/github.com/deltachat-bot/invitebot)
 
 Small bot that allows to generate invitation QRs for your private Delta Chat groups. The bot is always online
 and can add people to groups in "real time" while if you use your own invitation QRs, others will not be able

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '>=1.20.2'
+        cache: true
+
+    - name: Run gofmt
+      run: |
+        OUTPUT=`go fmt`; if [ -n "$OUTPUT" ]; then echo "$OUTPUT"; exit 1; fi
+
+    - name: Build
+      run: |
+        go build
+
+    - name: Test
+      run: |
+        ./invitebot --help
+
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+      - id: check-tag
+        run: |
+          if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo ::set-output name=match::true
+          fi
+      - uses: actions/setup-go@v3
+        if: ${{ github.event_name == 'push' && steps.check-tag.outputs.match == 'true' }}
+        with:
+          go-version: '>=1.20.2'
+          cache: true
+      - run: sudo apt install gcc-multilib
+      - uses: goreleaser/goreleaser-action@v4
+        if: ${{ github.event_name == 'push' && steps.check-tag.outputs.match == 'true' }}
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,18 +2,23 @@ package deltachat
 
 import "fmt"
 
+type ChatId uint64
+
+// Values in const.go
+type ChatType uint
+
 // Full chat snapshot.
 type FullChatSnapshot struct {
-	Id                  uint64
+	Id                  ChatId
 	Name                string
 	IsProtected         bool
 	ProfileImage        string
 	Archived            bool
-	ChatType            uint
+	ChatType            ChatType
 	IsUnpromoted        bool
 	IsSelfTalk          bool
 	Contacts            []*ContactSnapshot
-	ContactIds          []uint64
+	ContactIds          []ContactId
 	Color               string
 	FreshMessageCounter uint
 	IsContactRequest    bool
@@ -28,12 +33,12 @@ type FullChatSnapshot struct {
 
 // Cheaper version of FullChatSnapshot.
 type BasicChatSnapshot struct {
-	Id               uint64
+	Id               ChatId
 	Name             string
 	IsProtected      bool
 	ProfileImage     string
 	Archived         bool
-	ChatType         uint
+	ChatType         ChatType
 	IsUnpromoted     bool
 	IsSelfTalk       bool
 	Color            string
@@ -45,7 +50,7 @@ type BasicChatSnapshot struct {
 // Delta Chat Chat.
 type Chat struct {
 	Account *Account
-	Id      uint64
+	Id      ChatId
 }
 
 // Implement Stringer.
@@ -78,6 +83,27 @@ func (self *Chat) MarkNoticed() error {
 	return self.rpc().Call("marknoticed_chat", self.Account.Id, self.Id)
 }
 
+// Set mute duration of this chat.
+// duration value can be:
+//
+//	0 - Chat is not muted.
+//
+// -1 - Chat is muted until the user unmutes the chat.
+//
+//	t - Chat is muted for a limited period of time.
+func (self *Chat) SetMuteDuration(duration int64) error {
+	var data any
+	switch duration {
+	case -1:
+		data = "Forever"
+	case 0:
+		data = "NotMuted"
+	default:
+		data = map[string]int64{"Until": duration}
+	}
+	return self.rpc().Call("set_chat_mute_duration", self.Account.Id, self.Id, data)
+}
+
 // Set name of this chat.
 func (self *Chat) SetName(name string) error {
 	return self.rpc().Call("set_chat_name", self.Account.Id, self.Id, name)
@@ -88,29 +114,29 @@ func (self *Chat) SetImage(path string) error {
 	return self.rpc().Call("set_chat_profile_image", self.Account.Id, self.Id, path)
 }
 
+// Remove profile image of this chat.
+func (self *Chat) RemoveImage() error {
+	return self.rpc().Call("set_chat_profile_image", self.Account.Id, self.Id, nil)
+}
+
 // Pin this chat.
 func (self *Chat) Pin() error {
-	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, CHAT_VISIBILITY_PINNED)
+	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, ChatVisibilityPinned)
 }
 
 // Unpin this chat.
 func (self *Chat) Unpin() error {
-	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, CHAT_VISIBILITY_NORMAL)
+	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, ChatVisibilityNormal)
 }
 
 // Archive this chat.
 func (self *Chat) Archive() error {
-	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, CHAT_VISIBILITY_ARCHIVED)
+	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, ChatVisibilityArchived)
 }
 
 // Unarchive this chat.a
 func (self *Chat) Unarchive() error {
-	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, CHAT_VISIBILITY_NORMAL)
-}
-
-// Remove profile image of this chat.
-func (self *Chat) RemoveImage() error {
-	return self.rpc().Call("set_chat_profile_image", self.Account.Id, self.Id, nil)
+	return self.rpc().Call("set_chat_visibility", self.Account.Id, self.Id, ChatVisibilityNormal)
 }
 
 // Add contact to this group.
@@ -126,7 +152,7 @@ func (self *Chat) RemoveContact(contact *Contact) error {
 // Get the list of contacts in this chat.
 func (self *Chat) Contacts() ([]*Contact, error) {
 	var contacts []*Contact
-	var ids []uint64
+	var ids []ContactId
 	err := self.rpc().CallResult(&ids, "get_chat_contacts", self.Account.Id, self.Id)
 	if err != nil {
 		return contacts, err
@@ -171,7 +197,7 @@ func (self *Chat) EncryptionInfo() (string, error) {
 // Get the list of messages in this chat.
 func (self *Chat) Messages(infoOnly, addDaymarker bool) ([]*Message, error) {
 	var msgs []*Message
-	var ids []uint64
+	var ids []MsgId
 	err := self.rpc().CallResult(&ids, "get_message_ids", self.Account.Id, self.Id, infoOnly, addDaymarker)
 	if err != nil {
 		return msgs, err
@@ -183,6 +209,36 @@ func (self *Chat) Messages(infoOnly, addDaymarker bool) ([]*Message, error) {
 	return msgs, nil
 }
 
+// Search for messages in this chat containing the given query string.
+func (self *Chat) SearchMessages(query string) ([]*MsgSearchResult, error) {
+	var results []*MsgSearchResult
+
+	var msgIds []MsgId
+	var chatId any
+	if self.Id == 0 {
+		chatId = nil
+	} else {
+		chatId = self.Id
+	}
+	err := self.rpc().CallResult(&msgIds, "search_messages", self.Account.Id, query, chatId)
+	if err != nil {
+		return results, err
+	}
+
+	var resultsMap map[MsgId]*MsgSearchResult
+	err = self.rpc().CallResult(&resultsMap, "message_ids_to_search_results", self.Account.Id, msgIds)
+	if err != nil {
+		return results, err
+	}
+
+	results = make([]*MsgSearchResult, len(msgIds))
+	for i, msgId := range msgIds {
+		results[i] = resultsMap[msgId]
+	}
+
+	return results, nil
+}
+
 // Get the number of fresh messages in this chat.
 func (self *Chat) FreshMsgCount() (uint, error) {
 	var count uint
@@ -192,7 +248,7 @@ func (self *Chat) FreshMsgCount() (uint, error) {
 
 // Send a message and return the resulting Message instance.
 func (self *Chat) SendMsg(msgData MsgData) (*Message, error) {
-	var id uint64
+	var id MsgId
 	err := self.rpc().CallResult(&id, "send_msg", self.Account.Id, self.Id, msgData)
 	if err != nil {
 		return nil, err
@@ -202,7 +258,7 @@ func (self *Chat) SendMsg(msgData MsgData) (*Message, error) {
 
 // Send a text message and return the resulting Message instance.
 func (self *Chat) SendText(text string) (*Message, error) {
-	var id uint64
+	var id MsgId
 	err := self.rpc().CallResult(&id, "misc_send_text_message", self.Account.Id, self.Id, text)
 	if err != nil {
 		return nil, err
@@ -212,7 +268,7 @@ func (self *Chat) SendText(text string) (*Message, error) {
 
 // Send a video chat invitation.
 func (self *Chat) SendVideoChatInvitation() (*Message, error) {
-	var id uint64
+	var id MsgId
 	err := self.rpc().CallResult(&id, "send_videochat_invitation", self.Account.Id, self.Id)
 	if err != nil {
 		return nil, err
@@ -222,7 +278,7 @@ func (self *Chat) SendVideoChatInvitation() (*Message, error) {
 
 // Get first unread message in this chat.
 func (self *Chat) FirstUnreadMsg() (*Message, error) {
-	var id uint64
+	var id MsgId
 	err := self.rpc().CallResult(&id, "get_first_unread_message_of_chat", self.Account.Id, self.Id)
 	if err != nil {
 		return nil, err
@@ -252,7 +308,7 @@ func (self *Chat) FullSnapshot() (*FullChatSnapshot, error) {
 
 // Forward a list of messages to this chat.
 func (self *Chat) DeleteMsgs(messages []*Message) error {
-	ids := make([]uint64, len(messages))
+	ids := make([]MsgId, len(messages))
 	for i := range messages {
 		ids[i] = messages[i].Id
 	}

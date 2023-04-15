@@ -24,7 +24,7 @@ func main() {
 		bot.OnNewMsg(func(message *deltachat.Message) { onNewMsg(bot, message) })
 	})
 	cli.OnBotStart(func(bot *deltachat.Bot, cmd *cobra.Command, args []string) {
-		addr, _ := bot.GetConfig("addr")
+		addr, _ := bot.GetConfig("configured_addr")
 		cli.Logger.Infof("Listening at: %v", addr)
 	})
 	cli.Start()
@@ -44,7 +44,7 @@ func onNewMsg(bot *deltachat.Bot, message *deltachat.Message) {
 			cli.Logger.Error(err)
 			return
 		}
-		if chatInfo.ChatType == deltachat.CHAT_TYPE_GROUP {
+		if chatInfo.ChatType == deltachat.ChatGroup {
 			sendInviteQr(chat)
 		} else {
 			chat.SendText("The /invite command can only be used in groups, send /help for more info")
@@ -57,7 +57,7 @@ func onNewMsg(bot *deltachat.Bot, message *deltachat.Message) {
 			cli.Logger.Error(err)
 			return
 		}
-		if chatInfo.ChatType != deltachat.CHAT_TYPE_SINGLE {
+		if chatInfo.ChatType != deltachat.ChatSingle {
 			return
 		}
 		sendHelp(chat)

@@ -62,7 +62,7 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 			logger.Error(err)
 			return
 		}
-		if chat.ChatType == deltachat.ChatSingle {
+		if chat.ChatType == deltachat.ChatSingle || strings.HasPrefix(msg.Text, "/") {
 			err = bot.Rpc.MarkseenMsgs(accId, []deltachat.MsgId{msg.Id})
 			if err != nil {
 				logger.Error(err)

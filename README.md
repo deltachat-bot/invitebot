@@ -1,4 +1,5 @@
 #  InviteBot
+![Coverage](https://img.shields.io/badge/Coverage-65.4%25-yellow)
 
 ![Latest release](https://img.shields.io/github/v/tag/deltachat-bot/invitebot?label=release)
 [![CI](https://github.com/deltachat-bot/invitebot/actions/workflows/ci.yml/badge.svg)](https://github.com/deltachat-bot/invitebot/actions/workflows/ci.yml)

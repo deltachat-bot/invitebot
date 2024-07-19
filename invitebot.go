@@ -68,6 +68,9 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 				logger.Error(err)
 			}
 		}
+        if msg.SysmsgType == deltachat.SysmsgMemberAddedToGroup {
+            resendPads(bot.Rpc, accId, msg.ChatId)
+        }
 
 		args := strings.Split(msg.Text, " ")
 		switch args[0] {
@@ -81,6 +84,8 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 					logger.Error(err)
 				}
 			}
+		case "/pad":
+			sendPad(bot.Rpc, accId, msg.ChatId, msg.Text)
 		case "/help":
 			sendHelp(bot.Rpc, accId, msg.ChatId)
 		default:
@@ -96,6 +101,29 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 			logger.Error(err)
 		}
 	}
+}
+
+func sendPad(rpc *deltachat.Rpc, accID deltachat.AccountId, chatId deltachat.ChatId, command string) {
+    description := command[5:]  // bot adds text after /pad as description to the editor.xdc message
+    editor_path := "editor.xdc"
+	_, err := rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: description, File: editor_path})
+	if err != nil {
+		cli.GetLogger(accId).With("chat", chatId).Error(err)
+}
+
+func resendPads (rpc *deltachat.Rpc, accID deltachat.AccountId, chatId deltachat.ChatId) {
+    var toResend []MsgId
+    var selfAddr string
+    selfAddr, err := GetConfig(accId, "addr")
+    if err != nil {
+        for _, id :range GetMessageIds(accId, chatId, true, false) {
+            msg := GetMessage(accID, id)
+            if msg.Sender.Address == selfAddr && msg.WebxdcInfo != nil {
+                append(toResend, id)
+            }
+        }
+        rpc.ResendMessages(accId, toResend)
+    }
 }
 
 func sendHelp(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {

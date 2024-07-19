@@ -132,7 +132,10 @@ func sendHelp(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.Ch
 	text += "If you share your QR, your friends will be able to join only when you are online, but since I am a bot I am always online!\n\n"
 	text += "To get the invitation QR of a group, add me to the group and send in the group:\n\n/invite\n\n"
 	text += "I will share the invitation QR, you can then send it to friends you want to invite.\n\n"
-	text += "If you want to revoque te invitation QR just remove me from the group"
+	text += "If you want to revoque te invitation QR just remove me from the group.\n\n"
+	text += "To create a new shared editor for the group, you can write:\n\n"
+	text += "/pad Shopping List for Friday's Example Party\n\n"
+	text += "I will send an editor to the group, which anyone can edit; and if new members are added, they will see it, too."
 	_, err := rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: text})
 	if err != nil {
 		cli.GetLogger(accId).With("chat", chatId).Error(err)

@@ -2,3 +2,4 @@
 dist/
 coverage-percent.out
 coverage.out
+.idea/*

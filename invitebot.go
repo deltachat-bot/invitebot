@@ -111,14 +111,14 @@ func sendPad(rpc *deltachat.Rpc, accID deltachat.AccountId, chatId deltachat.Cha
 		cli.GetLogger(accId).With("chat", chatId).Error(err)
 }
 
-func resendPads (rpc *deltachat.Rpc, accID deltachat.AccountId, chatId deltachat.ChatId) {
+func resendPads(rpc *deltachat.Rpc, accID deltachat.AccountId, chatId deltachat.ChatId) {
     var toResend []MsgId
     var selfAddr string
     selfAddr, err := GetConfig(accId, "addr")
     if err != nil {
-        for _, id :range GetMessageIds(accId, chatId, true, false) {
+        for _, id := range GetMessageIds(accId, chatId, true, false) {
             msg := GetMessage(accID, id)
-            if msg.Sender.Address == selfAddr && msg.WebxdcInfo != nil {
+            if (msg.Sender.Address == selfAddr && msg.WebxdcInfo != nil) {
                 append(toResend, id)
             }
         }

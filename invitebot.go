@@ -40,10 +40,6 @@ func onBotInit(cli *botcli.BotCli, bot *deltachat.Bot, cmd *cobra.Command, args 
 			if err != nil {
 				cli.Logger.Error(err)
 			}
-			err = bot.Rpc.SetConfig(accId, "delete_device_after", option.Some("1800"))
-			if err != nil {
-				cli.Logger.Error(err)
-			}
 		}
 	}
 }
@@ -54,6 +50,10 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 	if err != nil {
 		logger.Error(err)
 		return
+	}
+
+	if msg.SystemMessageType == deltachat.SysmsgMemberAddedToGroup {
+		resendPads(bot.Rpc, accId, msg.ChatId)
 	}
 
 	if !msg.IsBot && !msg.IsInfo && msg.FromId > deltachat.ContactLastSpecial {
@@ -67,9 +67,6 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 			if err != nil {
 				logger.Error(err)
 			}
-		}
-		if msg.SystemMessageType == deltachat.SysmsgMemberAddedToGroup {
-			resendPads(bot.Rpc, accId, msg.ChatId)
 		}
 
 		args := strings.Split(msg.Text, " ")
@@ -114,9 +111,9 @@ func sendPad(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.Cha
 
 func resendPads(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {
 	var toResend []deltachat.MsgId
-	selfAddr, err := rpc.GetConfig(accId, "configured_addr")
-	if err != nil {
-		msgIds, _ := rpc.GetMessageIds(accId, chatId, true, false)
+	selfAddr, err := rpc.GetConfig(accId, "addr")
+	if err == nil {
+		msgIds, _ := rpc.GetMessageIds(accId, chatId, false, false)
 		for _, id := range msgIds {
 			msg, _ := rpc.GetMessage(accId, id)
 			senderaddress := msg.Sender.Address

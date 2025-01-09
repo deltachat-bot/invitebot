@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20240206182306-1262a8de3fc0
+	github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20250108161714-8d494ab3e1f8
 	github.com/deltachat/deltachat-rpc-client-go v1.134.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.8.0

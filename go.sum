@@ -8,6 +8,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20240206182306-1262a8de3fc0 h1:tAolhC8y40l8Zn+b/KdH4XsuTj4MH5/j7hkJrZUI2Mw=
 github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20240206182306-1262a8de3fc0/go.mod h1:Va1UY+jfELQZvB3mNVpW8ACdECDJbeWve7SynvtgQ5c=
+github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20250108161714-8d494ab3e1f8 h1:LpsL7lE2xNf9PokdEycrlprTXNt+4nDDmg+cqaoNwmY=
+github.com/deltachat-bot/deltabot-cli-go v0.6.1-0.20250108161714-8d494ab3e1f8/go.mod h1:Va1UY+jfELQZvB3mNVpW8ACdECDJbeWve7SynvtgQ5c=
 github.com/deltachat/deltachat-rpc-client-go v1.134.0 h1:rpGa/kL417ufyxsivT/G751aZifh8bpiPTIsXMzdDAI=
 github.com/deltachat/deltachat-rpc-client-go v1.134.0/go.mod h1:Ctd0M0o87y2B0QSOn8QN6IMDWjHD7XzDKsjNMYwP208=
 github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=

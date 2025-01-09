@@ -132,7 +132,7 @@ func sendInviteQr(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltacha
 		logger.Error(err)
 		return
 	}
-	_, err = rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: botcli.GenerateInviteLink(qrdata), File: path})
+	_, err = rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: qrdata, File: path})
 	if err != nil {
 		logger.Error(err)
 	}

@@ -86,8 +86,6 @@ jobs:
           go-version: '1.25'
           cache: true
 
-      - run: sudo apt install gcc-multilib
-
       - uses: goreleaser/goreleaser-action@v6
         if: ${{ github.event_name == 'push' && steps.check-tag.outputs.match == 'true' }}
         with:

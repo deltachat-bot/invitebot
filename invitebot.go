@@ -1,14 +1,11 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/deltachat-bot/deltabot-cli-go/botcli"
 	"github.com/chatmail/rpc-client-go/deltachat"
 	"github.com/chatmail/rpc-client-go/deltachat/option"
-	qrcode "github.com/skip2/go-qrcode"
 	"github.com/spf13/cobra"
 )
 
@@ -100,11 +97,11 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 
 func sendHelp(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {
 	text := "I am a bot that can help you invite friends to your private groups.\n\n"
-	text += "You can also share your own invitation QR with them so why would you need me?\n"
-	text += "If you share your QR, your friends will be able to join only when you are online, but since I am a bot I am always online!\n\n"
-	text += "To get the invitation QR of a group, add me to the group and send in the group:\n\n/invite\n\n"
-	text += "I will share the invitation QR, you can then send it to friends you want to invite.\n\n"
-	text += "If you want to revoque te invitation QR just remove me from the group"
+	text += "You can also share your own invitation link with them so why would you need me?\n"
+	text += "If you share your invitation link, your friends will be able to join only when you are online, but since I am a bot I am always online!\n\n"
+	text += "To get the invitation link of a group, add me to the group and send in the group:\n\n/invite\n\n"
+	text += "I will share the invitation link, you can then send it to friends you want to invite.\n\n"
+	text += "If you want to revoke te invitation link just remove me from the group"
 	_, err := rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: text})
 	if err != nil {
 		cli.GetLogger(accId).With("chat", chatId).Error(err)
@@ -113,26 +110,13 @@ func sendHelp(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.Ch
 
 func sendInviteQr(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {
 	logger := cli.GetLogger(accId).With("chat", chatId)
-	qrdata, _, err := rpc.GetChatSecurejoinQrCodeSvg(accId, option.Some(chatId))
+	qrdata, err := rpc.GetChatSecurejoinQrCode(accId, option.Some(chatId))
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-	defer os.RemoveAll(dir)
-	path := filepath.Join(dir, "qr.png")
-
-	err = qrcode.WriteFile(qrdata, qrcode.Medium, 256, path)
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-	_, err = rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: qrdata, File: path})
+	_, err = rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: qrdata})
 	if err != nil {
 		logger.Error(err)
 	}

@@ -46,7 +46,6 @@ func TestBot(t *testing.T) {
 		_, err = userRpc.MiscSendTextMessage(userAcc, groupWithBot, "/invite")
 		require.Nil(t, err)
 		msg = acfactory.NextMsg(userRpc, userAcc)
-		require.NotEmpty(t, msg.File)
 		require.Contains(t, msg.Text, "https://i.delta.chat")
 	})
 }

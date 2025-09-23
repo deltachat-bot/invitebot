@@ -5,7 +5,6 @@ go 1.25.1
 require (
 	github.com/chatmail/rpc-client-go v1.2.15-0.20250915190709-8b6470d63ebe
 	github.com/deltachat-bot/deltabot-cli-go v1.2.14
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.2
 )

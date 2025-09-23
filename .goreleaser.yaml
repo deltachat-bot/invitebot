@@ -39,6 +39,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+      - '^chore:'
       - '^skip-changelog:'
 
 # The lines beneath this are called `modelines`. See `:help modeline`

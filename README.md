@@ -23,7 +23,7 @@ go install github.com/deltachat-bot/invitebot@latest
 
 This program depends on a standalone Delta Chat RPC server `deltachat-rpc-server` program that must be
 available in your `PATH`. For installation instructions check:
-https://github.com/deltachat/deltachat-core-rust/tree/master/deltachat-rpc-server
+https://github.com/chatmail/core/tree/master/deltachat-rpc-server
 
 ## Running the bot
 
@@ -31,6 +31,12 @@ Configure the bot:
 
 ```sh
 invitebot init bot@example.com PASSWORD
+```
+
+Get the bot's invite link:
+
+```sh
+invitebot link
 ```
 
 Start the bot:
@@ -46,8 +52,8 @@ Run `invitebot --help` to see all available options.
 
 Once the bot is running:
 
-1. Add the bot address to some group in Delta Chat.
+1. Add the bot to some group in Delta Chat.
 2. Send `/invite` in the group.
-3. The bot will reply with an invitation QR.
-4. Share the invitation QR with friends.
-5. To revoque invitations, simply remove the bot from the group.
+3. The bot will reply with an invitation link.
+4. Share the invitation link with friends.
+5. To revoke invitations, simply remove the bot from the group.

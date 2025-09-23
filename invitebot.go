@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/deltachat-bot/deltabot-cli-go/botcli"
-	"github.com/deltachat/deltachat-rpc-client-go/deltachat"
-	"github.com/deltachat/deltachat-rpc-client-go/deltachat/option"
+	"github.com/chatmail/rpc-client-go/deltachat"
+	"github.com/chatmail/rpc-client-go/deltachat/option"
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/spf13/cobra"
 )

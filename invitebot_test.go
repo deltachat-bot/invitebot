@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/deltachat-bot/deltabot-cli-go/botcli"
-	"github.com/deltachat/deltachat-rpc-client-go/deltachat"
+	"github.com/chatmail/rpc-client-go/deltachat"
 	"github.com/stretchr/testify/require"
 )
 

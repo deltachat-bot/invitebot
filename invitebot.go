@@ -3,13 +3,14 @@ package main
 import (
 	"strings"
 
-	"github.com/deltachat-bot/deltabot-cli-go/botcli"
-	"github.com/chatmail/rpc-client-go/deltachat"
-	"github.com/chatmail/rpc-client-go/deltachat/option"
+	"github.com/chatmail/rpc-client-go/v2/deltachat"
+	"github.com/deltachat-bot/deltabot-cli-go/v2/botcli"
 	"github.com/spf13/cobra"
 )
 
 var cli = botcli.New("invitebot")
+
+func strptr(s string) *string { return &s }
 
 func onBotInit(cli *botcli.BotCli, bot *deltachat.Bot, cmd *cobra.Command, args []string) {
 	bot.OnNewMsg(onNewMsg)
@@ -23,21 +24,21 @@ func onBotInit(cli *botcli.BotCli, bot *deltachat.Bot, cmd *cobra.Command, args 
 		if err != nil {
 			cli.Logger.Error(err)
 		}
-		if name.UnwrapOr("") == "" {
-			err = bot.Rpc.SetConfig(accId, "displayname", option.Some("InviteBot"))
+		if name != nil && *name == "" {
+			err = bot.Rpc.SetConfig(accId, "displayname", strptr("InviteBot"))
 			if err != nil {
 				cli.Logger.Error(err)
 			}
 			status := "I am a bot that helps you invite friends to your private groups, send me /help for more info"
-			err = bot.Rpc.SetConfig(accId, "selfstatus", option.Some(status))
+			err = bot.Rpc.SetConfig(accId, "selfstatus", &status)
 			if err != nil {
 				cli.Logger.Error(err)
 			}
-			err = bot.Rpc.SetConfig(accId, "delete_server_after", option.Some("1"))
+			err = bot.Rpc.SetConfig(accId, "delete_server_after", strptr("1"))
 			if err != nil {
 				cli.Logger.Error(err)
 			}
-			err = bot.Rpc.SetConfig(accId, "delete_device_after", option.Some("1800"))
+			err = bot.Rpc.SetConfig(accId, "delete_device_after", strptr("1800"))
 			if err != nil {
 				cli.Logger.Error(err)
 			}
@@ -45,7 +46,7 @@ func onBotInit(cli *botcli.BotCli, bot *deltachat.Bot, cmd *cobra.Command, args 
 	}
 }
 
-func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.MsgId) {
+func onNewMsg(bot *deltachat.Bot, accId uint32, msgId uint32) {
 	logger := cli.GetLogger(accId).With("msg", msgId)
 	msg, err := bot.Rpc.GetMessage(accId, msgId)
 	if err != nil {
@@ -59,8 +60,8 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 			logger.Error(err)
 			return
 		}
-		if chat.ChatType == deltachat.ChatSingle || strings.HasPrefix(msg.Text, "/") {
-			err = bot.Rpc.MarkseenMsgs(accId, []deltachat.MsgId{msg.Id})
+		if chat.ChatType == deltachat.ChatTypeSingle || strings.HasPrefix(msg.Text, "/") {
+			err = bot.Rpc.MarkseenMsgs(accId, []uint32{msg.Id})
 			if err != nil {
 				logger.Error(err)
 			}
@@ -69,11 +70,11 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 		args := strings.Split(msg.Text, " ")
 		switch args[0] {
 		case "/invite":
-			if chat.ChatType == deltachat.ChatGroup {
+			if chat.ChatType == deltachat.ChatTypeGroup {
 				sendInviteQr(bot.Rpc, accId, msg.ChatId)
 			} else {
 				text := "The /invite command can only be used in groups, send /help for more info"
-				_, err := bot.Rpc.SendMsg(accId, msg.ChatId, deltachat.MsgData{Text: text})
+				_, err := bot.Rpc.SendMsg(accId, msg.ChatId, deltachat.MessageData{Text: &text})
 				if err != nil {
 					logger.Error(err)
 				}
@@ -81,42 +82,42 @@ func onNewMsg(bot *deltachat.Bot, accId deltachat.AccountId, msgId deltachat.Msg
 		case "/help":
 			sendHelp(bot.Rpc, accId, msg.ChatId)
 		default:
-			if chat.ChatType == deltachat.ChatSingle {
+			if chat.ChatType == deltachat.ChatTypeSingle {
 				sendHelp(bot.Rpc, accId, msg.ChatId)
 			}
 		}
 	}
 
 	if msg.FromId > deltachat.ContactLastSpecial {
-		err = bot.Rpc.DeleteMessages(accId, []deltachat.MsgId{msg.Id})
+		err = bot.Rpc.DeleteMessages(accId, []uint32{msg.Id})
 		if err != nil {
 			logger.Error(err)
 		}
 	}
 }
 
-func sendHelp(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {
+func sendHelp(rpc *deltachat.Rpc, accId uint32, chatId uint32) {
 	text := "I am a bot that can help you invite friends to your private groups.\n\n"
 	text += "You can also share your own invitation link with them so why would you need me?\n"
 	text += "If you share your invitation link, your friends will be able to join only when you are online, but since I am a bot I am always online!\n\n"
 	text += "To get the invitation link of a group, add me to the group and send in the group:\n\n/invite\n\n"
 	text += "I will share the invitation link, you can then send it to friends you want to invite.\n\n"
 	text += "If you want to revoke te invitation link just remove me from the group"
-	_, err := rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: text})
+	_, err := rpc.SendMsg(accId, chatId, deltachat.MessageData{Text: &text})
 	if err != nil {
 		cli.GetLogger(accId).With("chat", chatId).Error(err)
 	}
 }
 
-func sendInviteQr(rpc *deltachat.Rpc, accId deltachat.AccountId, chatId deltachat.ChatId) {
+func sendInviteQr(rpc *deltachat.Rpc, accId uint32, chatId uint32) {
 	logger := cli.GetLogger(accId).With("chat", chatId)
-	qrdata, err := rpc.GetChatSecurejoinQrCode(accId, option.Some(chatId))
+	qrdata, err := rpc.GetChatSecurejoinQrCode(accId, &chatId)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 
-	_, err = rpc.SendMsg(accId, chatId, deltachat.MsgData{Text: qrdata})
+	_, err = rpc.SendMsg(accId, chatId, deltachat.MessageData{Text: &qrdata})
 	if err != nil {
 		logger.Error(err)
 	}

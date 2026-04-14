@@ -1,10 +1,8 @@
 #!/bin/env bash
-
-# build frontend
-go generate ./...
+set -euo pipefail
 
 echo "Checking code with gofmt..."
-OUTPUT=`gofmt -d src`
+OUTPUT=`gofmt -d .`
 if [ -n "$OUTPUT" ]
 then
     echo "$OUTPUT"
@@ -18,10 +16,7 @@ then
     # binary will be $(go env GOPATH)/bin/golangci-lint
     curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.4.0
 fi
-if ! golangci-lint run
-then
-    exit 1
-fi
+golangci-lint run
 
 # Install test dependencies
 if ! command -v deltachat-rpc-server &> /dev/null
@@ -31,12 +26,7 @@ then
     chmod +x deltachat-rpc-server
     export PATH=`pwd`:"$PATH"
 fi
-if ! command -v courtney &> /dev/null
-then
-    echo "courtney not found, installing..."
-    go install github.com/dave/courtney@master
-fi
 
-# run the tests
-courtney -v -t="./..." ${TEST_EXTRA_TAGS:--t="-parallel=1"}
+# add -parallel=1 to avoid running tests in parallel
+go test -v ./... -coverprofile coverage.out
 go tool cover -func=coverage.out -o=coverage-percent.out

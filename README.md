@@ -30,13 +30,7 @@ https://github.com/chatmail/core/tree/master/deltachat-rpc-server
 Configure the bot:
 
 ```sh
-invitebot init bot@example.com PASSWORD
-```
-
-Get the bot's invite link:
-
-```sh
-invitebot link
+invitebot init dcaccount:nine.testrun.org
 ```
 
 Start the bot:
@@ -52,7 +46,7 @@ Run `invitebot --help` to see all available options.
 
 Once the bot is running:
 
-1. Add the bot to some group in Delta Chat.
+1. Get in contact with the bot using its invite link and add the bot to some group in Delta Chat.
 2. Send `/invite` in the group.
 3. The bot will reply with an invitation link.
 4. Share the invitation link with friends.

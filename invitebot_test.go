@@ -3,12 +3,12 @@ package main
 import (
 	"testing"
 
-	"github.com/deltachat-bot/deltabot-cli-go/botcli"
-	"github.com/chatmail/rpc-client-go/deltachat"
+	"github.com/chatmail/rpc-client-go/v2/deltachat"
+	"github.com/deltachat-bot/deltabot-cli-go/v2/botcli"
 	"github.com/stretchr/testify/require"
 )
 
-type TestCallback func(bot *deltachat.Bot, botAcc deltachat.AccountId, userRpc *deltachat.Rpc, userAcc deltachat.AccountId)
+type TestCallback func(bot *deltachat.Bot, botAcc uint32, userRpc *deltachat.Rpc, userAcc uint32)
 
 var acfactory *deltachat.AcFactory
 
@@ -20,8 +20,8 @@ func TestMain(m *testing.M) {
 }
 
 func withBotAndUser(callback TestCallback) {
-	acfactory.WithOnlineBot(func(bot *deltachat.Bot, botAcc deltachat.AccountId) {
-		acfactory.WithOnlineAccount(func(userRpc *deltachat.Rpc, userAcc deltachat.AccountId) {
+	acfactory.WithOnlineBot(func(bot *deltachat.Bot, botAcc uint32) {
+		acfactory.WithOnlineAccount(func(userRpc *deltachat.Rpc, userAcc uint32) {
 			cli := &botcli.BotCli{AppDir: acfactory.MkdirTemp()}
 			onBotInit(cli, bot, nil, nil)
 			go bot.Run() //nolint:errcheck
@@ -31,7 +31,7 @@ func withBotAndUser(callback TestCallback) {
 }
 
 func TestBot(t *testing.T) {
-	withBotAndUser(func(bot *deltachat.Bot, botAcc deltachat.AccountId, userRpc *deltachat.Rpc, userAcc deltachat.AccountId) {
+	withBotAndUser(func(bot *deltachat.Bot, botAcc uint32, userRpc *deltachat.Rpc, userAcc uint32) {
 		chatWithBot := acfactory.CreateChat(userRpc, userAcc, bot.Rpc, botAcc)
 		_, err := userRpc.MiscSendTextMessage(userAcc, chatWithBot, "hi")
 		require.Nil(t, err)
